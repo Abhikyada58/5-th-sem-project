@@ -84,74 +84,96 @@ export default function StudentManagement() {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-      <div className="p-6 border-b flex justify-between items-center">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
         <input 
           type="text" 
           placeholder="Search students..." 
-          className="border border-gray-300 rounded-md px-4 py-2 w-64 text-sm"
+          className="w-full sm:w-72 bg-white border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm border px-4 py-2 text-sm"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
         <button 
           onClick={() => { setCurrentStudent(null); setIsModalOpen(true); }}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium"
+          className="w-full sm:w-auto bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 text-sm font-semibold shadow-sm transition-colors"
         >
           Add New Student
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse min-w-max">
           <thead>
-            <tr className="bg-gray-50 border-b">
-              <th className="p-4 font-semibold text-gray-500 text-xs uppercase">Student ID</th>
-              <th className="p-4 font-semibold text-gray-500 text-xs uppercase">Name</th>
-              <th className="p-4 font-semibold text-gray-500 text-xs uppercase">Class</th>
-              <th className="p-4 font-semibold text-gray-500 text-xs uppercase">Status</th>
-              <th className="p-4 font-semibold text-gray-500 text-xs uppercase">Valid Until</th>
-              <th className="p-4 font-semibold text-gray-500 text-xs uppercase text-right">Actions</th>
+            <tr className="bg-white border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider font-semibold">
+              <th className="p-5">Student ID</th>
+              <th className="p-5">Student Details</th>
+              <th className="p-5">Class</th>
+              <th className="p-5">Status</th>
+              <th className="p-5">Valid Until</th>
+              <th className="p-5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-50">
             {loading ? (
-              <tr><td colSpan="6" className="p-4 text-center text-sm text-gray-500">Loading...</td></tr>
-            ) : filteredStudents.map(student => (
-              <tr key={student._id} className="border-b hover:bg-gray-50">
-                <td className="p-4 text-sm font-medium text-gray-900">{student.studentId || '-'}</td>
-                <td className="p-4 text-sm text-gray-700">
-                  <div className="font-medium">{student.fullName}</div>
-                  <div className="text-xs text-gray-500">{student.email}</div>
+              [1,2,3,4,5].map(i => (
+                <tr key={i} className="animate-pulse">
+                  <td className="p-5"><div className="h-4 bg-gray-200 rounded w-16"></div></td>
+                  <td className="p-5">
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                    <div className="h-3 bg-gray-100 rounded w-48"></div>
+                  </td>
+                  <td className="p-5"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
+                  <td className="p-5"><div className="h-6 bg-gray-200 rounded-full w-16"></div></td>
+                  <td className="p-5"><div className="h-4 bg-gray-200 rounded w-24"></div></td>
+                  <td className="p-5"><div className="h-8 bg-gray-200 rounded w-32 ml-auto"></div></td>
+                </tr>
+              ))
+            ) : filteredStudents.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="p-10 text-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <ShieldAlert className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <p className="text-lg font-medium text-gray-700">No students found</p>
+                  <p className="text-sm">Adjust your search or add a new student.</p>
                 </td>
-                <td className="p-4 text-sm text-gray-700">{student.classId?.name || 'Unassigned'}</td>
-                <td className="p-4">
-                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${student.accountStatus === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              </tr>
+            ) : filteredStudents.map(student => (
+              <tr key={student._id} className="hover:bg-gray-50/50 transition-colors group">
+                <td className="p-5 text-sm font-semibold text-gray-900">{student.studentId || '-'}</td>
+                <td className="p-5">
+                  <div className="font-bold text-sm text-gray-900">{student.fullName}</div>
+                  <div className="text-xs text-gray-500 font-medium">{student.email}</div>
+                </td>
+                <td className="p-5 text-sm text-gray-600 font-medium">{student.classId?.name || 'Unassigned'}</td>
+                <td className="p-5">
+                  <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg ${student.accountStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                     {student.accountStatus}
                   </span>
                 </td>
-                <td className="p-4 text-sm text-gray-700">
+                <td className="p-5 text-sm text-gray-700 font-medium">
                   {student.accountExpiresAt ? (
-                    <span className={new Date(student.accountExpiresAt) < new Date() ? 'text-red-500 font-bold' : ''}>
+                    <span className={new Date(student.accountExpiresAt) < new Date() ? 'text-rose-600 font-bold bg-rose-50 px-2 py-1 rounded-md' : ''}>
                       {new Date(student.accountExpiresAt).toLocaleDateString()}
                     </span>
                   ) : (
-                    <span className="text-gray-400">Forever</span>
+                    <span className="text-gray-400 italic">Forever</span>
                   )}
                 </td>
-                <td className="p-4 flex justify-end space-x-2">
-                  <button onClick={() => handleSetExpiry(student)} className="p-2 text-gray-500 hover:text-indigo-600 bg-gray-100 rounded-md" title="Set Expiry">
+                <td className="p-5 flex justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => handleSetExpiry(student)} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Set Expiry">
                     <Calendar className="w-4 h-4" />
                   </button>
-                  <button onClick={() => toggleStatus(student)} className="p-2 text-gray-500 hover:text-orange-600 bg-gray-100 rounded-md" title="Toggle Status">
+                  <button onClick={() => toggleStatus(student)} className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Toggle Status">
                     <ShieldAlert className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleResetFace(student._id)} className="p-2 text-gray-500 hover:text-purple-600 bg-gray-100 rounded-md" title="Reset Face ID">
+                  <button onClick={() => handleResetFace(student._id)} className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Reset Face ID">
                     <KeyRound className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { setCurrentStudent(student); setIsModalOpen(true); }} className="p-2 text-gray-500 hover:text-blue-600 bg-gray-100 rounded-md" title="Edit">
+                  <button onClick={() => { setCurrentStudent(student); setIsModalOpen(true); }} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(student._id)} className="p-2 text-gray-500 hover:text-red-600 bg-gray-100 rounded-md" title="Delete">
+                  <button onClick={() => handleDelete(student._id)} className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </td>

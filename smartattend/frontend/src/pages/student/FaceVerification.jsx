@@ -148,35 +148,38 @@ export default function FaceVerification() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-800">
+    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-4 z-50 overflow-hidden font-sans">
+      <div className="max-w-md w-full bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden border border-gray-800 relative">
         
         {/* Header */}
-        <div className="bg-indigo-600 p-6 text-white text-center relative">
+        <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 p-8 text-white text-center relative shadow-lg">
           <button 
             onClick={() => navigate('/student')} 
-            className="absolute left-4 top-6 text-indigo-100 hover:text-white"
+            className="absolute left-6 top-8 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center text-indigo-100 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <ShieldAlert className="w-10 h-10 mx-auto mb-2 opacity-90" />
-          <h2 className="text-xl font-bold">Live Verification</h2>
+          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+            <ShieldAlert className="w-8 h-8 text-indigo-100" />
+          </div>
+          <h2 className="text-2xl font-extrabold tracking-tight">Live Verification</h2>
+          <p className="text-indigo-200 mt-1 text-sm font-medium">Zero-Trust Biometrics</p>
         </div>
 
         <div className="p-8 flex flex-col items-center">
           
           {/* Status Banner */}
-          <div className="mb-6 bg-gray-800 text-indigo-400 px-6 py-3 rounded-full font-semibold border border-gray-700 flex items-center text-sm w-full justify-center text-center">
-            {isCapturing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
+          <div className={`mb-8 px-6 py-3 rounded-full font-semibold border flex items-center text-sm w-full justify-center text-center transition-colors ${isCapturing ? 'bg-indigo-900/50 text-indigo-300 border-indigo-700' : 'bg-gray-800 text-gray-300 border-gray-700'}`}>
+            {isCapturing ? <Loader2 className="w-5 h-5 mr-3 animate-spin" /> : <Camera className="w-5 h-5 mr-3 text-indigo-500" />}
             {statusText}
           </div>
 
           {/* Video Feed */}
-          <div className="relative rounded-full overflow-hidden border-4 border-indigo-500/50 bg-black shadow-inner" style={{ width: 280, height: 280 }}>
+          <div className="relative rounded-full overflow-hidden border-4 border-indigo-500 bg-gray-950 shadow-[0_0_30px_rgba(99,102,241,0.2)]" style={{ width: 280, height: 280 }}>
             {!modelsLoaded ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                <span className="text-xs">Loading Secure AI...</span>
+                <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
+                <span className="text-sm font-medium">Loading AI Models...</span>
               </div>
             ) : (
               <video 
@@ -184,22 +187,22 @@ export default function FaceVerification() {
                 autoPlay 
                 muted 
                 playsInline
-                className={`w-full h-full object-cover ${(isCapturing) ? 'opacity-50 blur-sm' : 'opacity-100'} transition-all`}
+                className={`w-full h-full object-cover ${(isCapturing) ? 'opacity-50 blur-md scale-110' : 'opacity-100 scale-100'} transition-all duration-500`}
               />
             )}
             
             {/* Guide overlay */}
-            <div className="absolute inset-0 border-[20px] border-gray-900/40 rounded-full pointer-events-none"></div>
+            <div className="absolute inset-0 border-[24px] border-gray-950/60 rounded-full pointer-events-none"></div>
           </div>
 
-          <p className="text-gray-400 text-center text-sm mt-8 mb-6">
-            Ensure you are in a well-lit area. Remove any masks or heavy glasses.
+          <p className="text-gray-400 text-center text-sm mt-8 mb-6 font-medium px-4">
+            Position your face inside the circle. Remove masks or glasses.
           </p>
 
           <button 
             onClick={handleVerify}
             disabled={isCapturing || !cameraActive}
-            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center"
+            className="w-full py-4.5 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-500 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed transition-all flex items-center justify-center py-4"
           >
             {isCapturing ? (
               <>Verifying Identity...</>

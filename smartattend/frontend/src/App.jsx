@@ -1,16 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute';
 import StudentRoute from './components/StudentRoute';
 
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Unauthorized from './pages/Unauthorized';
-import Dashboard from './pages/Dashboard';
+import DashboardLayout from './layouts/DashboardLayout';
 
 // Admin Pages
-import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import StudentManagement from './pages/admin/StudentManagement';
 import TeacherManagement from './pages/admin/TeacherManagement';
@@ -37,45 +37,32 @@ function App() {
         <SocketProvider>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Admin Routes with Sidebar Layout */}
-          <Route path="/admin" element={
-            <RoleRoute allowedRoles={['ADMIN']}>
-              <AdminLayout />
-            </RoleRoute>
-          }>
-            <Route index element={<AdminDashboard />} />
-            <Route path="students" element={<StudentManagement />} />
-            <Route path="teachers" element={<TeacherManagement />} />
-            <Route path="classes" element={<ClassManagement />} />
-            <Route path="subjects" element={<SubjectManagement />} />
-            <Route path="audit-logs" element={<AuditLogs />} />
-          </Route>
-          
-          {/* Teacher Routes */}
-          <Route path="/teacher" element={
-            <RoleRoute allowedRoles={['TEACHER']}>
-              <TeacherDashboard />
-            </RoleRoute>
-          } />
-          <Route path="/teacher/reports" element={
-            <RoleRoute allowedRoles={['TEACHER']}>
-              <TeacherReports />
-            </RoleRoute>
-          } />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<RoleRoute allowedRoles={['ADMIN']}><DashboardLayout><AdminDashboard /></DashboardLayout></RoleRoute>} />
+            <Route path="/admin/students" element={<RoleRoute allowedRoles={['ADMIN']}><DashboardLayout><StudentManagement /></DashboardLayout></RoleRoute>} />
+            <Route path="/admin/teachers" element={<RoleRoute allowedRoles={['ADMIN']}><DashboardLayout><TeacherManagement /></DashboardLayout></RoleRoute>} />
+            <Route path="/admin/classes" element={<RoleRoute allowedRoles={['ADMIN']}><DashboardLayout><ClassManagement /></DashboardLayout></RoleRoute>} />
+            <Route path="/admin/subjects" element={<RoleRoute allowedRoles={['ADMIN']}><DashboardLayout><SubjectManagement /></DashboardLayout></RoleRoute>} />
+            <Route path="/admin/audit-logs" element={<RoleRoute allowedRoles={['ADMIN']}><DashboardLayout><AuditLogs /></DashboardLayout></RoleRoute>} />
 
-          {/* Student Routes */}
-          <Route path="/student/setup" element={<ProtectedRoute><StudentSetup /></ProtectedRoute>} />
-          <Route path="/student/face-enrollment" element={<ProtectedRoute><FaceEnrollment /></ProtectedRoute>} />
-          
-          <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
-          <Route path="/student/profile" element={<StudentRoute><StudentProfile /></StudentRoute>} />
-          <Route path="/student/scan-qr" element={<StudentRoute><QRScanner /></StudentRoute>} />
-          <Route path="/student/verify-face" element={<StudentRoute><FaceVerification /></StudentRoute>} />
+            {/* Teacher Routes */}
+            <Route path="/teacher" element={<RoleRoute allowedRoles={['TEACHER']}><DashboardLayout><TeacherDashboard /></DashboardLayout></RoleRoute>} />
+            <Route path="/teacher/reports" element={<RoleRoute allowedRoles={['TEACHER']}><DashboardLayout><TeacherReports /></DashboardLayout></RoleRoute>} />
+
+            {/* Student Setup & Onboarding (No Sidebar Layout) */}
+            <Route path="/student/setup" element={<ProtectedRoute><StudentSetup /></ProtectedRoute>} />
+            <Route path="/student/face-enrollment" element={<ProtectedRoute><FaceEnrollment /></ProtectedRoute>} />
+            <Route path="/student/verify-face" element={<ProtectedRoute><FaceVerification /></ProtectedRoute>} />
+            <Route path="/student/scan-qr" element={<StudentRoute><QRScanner /></StudentRoute>} />
+
+            {/* Student Dashboard Routes */}
+            <Route path="/student" element={<StudentRoute><DashboardLayout><StudentDashboard /></DashboardLayout></StudentRoute>} />
+            <Route path="/student/profile" element={<StudentRoute><DashboardLayout><StudentProfile /></DashboardLayout></StudentRoute>} />
 
           </Routes>
         </SocketProvider>
