@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -75,10 +76,16 @@ export default function TeacherDashboard() {
       // We could update a live participant list state here
     };
 
+    const handleStudentEntered = (data) => {
+      toast(`${data.studentName} is verifying their face...`, { icon: '👀' });
+    };
+
     socket.on('attendance-updated', handleAttendanceUpdated);
+    socket.on('student-entered-session', handleStudentEntered);
 
     return () => {
       socket.off('attendance-updated', handleAttendanceUpdated);
+      socket.off('student-entered-session', handleStudentEntered);
     };
   }, [socket, subjects]);
 
@@ -141,7 +148,11 @@ export default function TeacherDashboard() {
         <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Teacher Dashboard</h1>
-            <p className="text-gray-500">Welcome, {user.fullName}</p>
+            <div className="flex space-x-4 mt-2 text-sm">
+              <span className="text-indigo-600 font-medium">Dashboard</span>
+              <span className="text-gray-300">|</span>
+              <Link to="/teacher/reports" className="text-gray-500 hover:text-indigo-600 font-medium">Reports</Link>
+            </div>
           </div>
           <button onClick={logout} className="text-red-500 hover:text-red-700 font-medium">Logout</button>
         </div>

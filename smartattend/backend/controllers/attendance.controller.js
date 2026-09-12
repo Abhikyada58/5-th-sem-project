@@ -53,6 +53,13 @@ exports.verifyQR = async (req, res) => {
       { expiresIn: '5m' }
     );
 
+    // Notify teacher that a student has scanned the QR and is currently verifying face
+    if (req.io) {
+      req.io.to(session.classId.toString()).emit('student-entered-session', {
+        studentName: req.user.fullName
+      });
+    }
+
     res.json({
       success: true,
       message: 'QR verified. Proceed to face verification.',
@@ -179,9 +186,6 @@ exports.markAttendance = async (req, res) => {
         studentName: attendanceRecord.studentId.fullName,
         rollNumber: attendanceRecord.studentId.rollNumber,
         markedAt: attendanceRecord.markedAt
-      });
-      req.io.to(session.classId.toString()).emit('student-entered-session', {
-        studentName: attendanceRecord.studentId.fullName
       });
     }
 

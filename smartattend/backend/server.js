@@ -38,6 +38,7 @@ const studentRoutes = require('./routes/student.routes');
 const faceRoutes = require('./routes/face.routes');
 const sessionRoutes = require('./routes/session.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
+const reportRoutes = require('./routes/report.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
@@ -45,6 +46,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api/face-enrollment', faceRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'SmartAttend API is running' });

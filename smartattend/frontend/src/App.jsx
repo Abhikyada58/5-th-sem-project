@@ -20,6 +20,7 @@ import AuditLogs from './pages/admin/AuditLogs';
 
 // Teacher Pages
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
+import TeacherReports from './pages/teacher/TeacherReports';
 
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -59,6 +60,11 @@ function App() {
           <Route path="/teacher" element={
             <RoleRoute allowedRoles={['TEACHER']}>
               <TeacherDashboard />
+            </RoleRoute>
+          } />
+          <Route path="/teacher/reports" element={
+            <RoleRoute allowedRoles={['TEACHER']}>
+              <TeacherReports />
             </RoleRoute>
           } />
 
