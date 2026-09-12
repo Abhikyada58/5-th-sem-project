@@ -56,6 +56,15 @@ exports.startSession = async (req, res) => {
       });
     }
 
+    const auditService = require('../services/audit.service');
+    await auditService.logAction(
+      req.user._id,
+      'ATTENDANCE_SESSION_CREATED',
+      'AttendanceSession',
+      { sessionId: session._id, classId, subjectId },
+      req.ip
+    );
+
     // We return the RAW token to the frontend, but we never store it raw.
     res.status(201).json({
       success: true,

@@ -15,8 +15,9 @@ router.get('/students', adminController.getStudents);
 router.post('/students', adminController.createStudent);
 router.put('/students/:id', adminController.updateStudent);
 router.delete('/students/:id', adminController.deleteStudent);
-router.put('/students/:id/status', adminController.updateAccountStatus);
-router.put('/students/:id/reset-face', adminController.resetFaceEnrollment);
+router.patch('/users/:id/status', adminController.updateUserStatus);
+router.patch('/users/:id/validity', adminController.updateUserValidity);
+router.put('/users/:id/reset-face', adminController.resetFaceEnrollment);
 
 // Teachers
 router.get('/teachers', adminController.getTeachers);

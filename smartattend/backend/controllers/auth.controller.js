@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const auditService = require('../services/audit.service');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -53,6 +54,16 @@ exports.register = async (req, res) => {
       studentId: role === 'STUDENT' ? studentId : undefined,
       classId: role === 'STUDENT' ? classId : undefined,
     });
+
+    // Audit Log: Account Creation
+    // (If created by an admin, req.user would exist. Since register is public right now, we use the created user's ID)
+    await auditService.logAction(
+      req.user ? req.user._id : user._id, 
+      'ACCOUNT_CREATION', 
+      'User', 
+      { email, role, createdUserId: user._id }, 
+      req.ip
+    );
 
     sendTokenResponse(user, 201, res);
   } catch (error) {

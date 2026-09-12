@@ -89,18 +89,46 @@ exports.updateStudent = async (req, res) => {
 exports.deleteStudent = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    await logAction(req.user._id, 'DELETE_STUDENT', 'User', { studentId: req.params.id });
+    const auditService = require('../services/audit.service');
+    await auditService.logAction(req.user._id, 'ACCOUNT_DELETION', 'User', { targetUserId: req.params.id }, req.ip);
     res.json({ success: true, message: 'Student deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
-exports.updateAccountStatus = async (req, res) => {
+exports.updateUserStatus = async (req, res) => {
   try {
-    const { accountStatus, accountExpiresAt } = req.body;
-    const user = await User.findByIdAndUpdate(req.params.id, { accountStatus, accountExpiresAt }, { new: true }).select('-passwordHash');
-    await logAction(req.user._id, 'UPDATE_ACCOUNT_STATUS', 'User', { targetUserId: req.params.id, accountStatus });
+    const { accountStatus } = req.body;
+    if (!['ACTIVE', 'INACTIVE', 'SUSPENDED'].includes(accountStatus)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+    
+    const user = await User.findByIdAndUpdate(req.params.id, { accountStatus }, { new: true }).select('-passwordHash');
+    
+    const auditService = require('../services/audit.service');
+    const action = accountStatus === 'ACTIVE' ? 'ACCOUNT_ACTIVATION' : 'ACCOUNT_DEACTIVATION';
+    await auditService.logAction(req.user._id, action, 'User', { targetUserId: req.params.id, status: accountStatus }, req.ip);
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+exports.updateUserValidity = async (req, res) => {
+  try {
+    const { accountExpiresAt } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.params.id, 
+      { accountExpiresAt: accountExpiresAt ? new Date(accountExpiresAt) : null }, 
+      { new: true }
+    ).select('-passwordHash');
+    
+    const auditService = require('../services/audit.service');
+    await auditService.logAction(req.user._id, 'EXPIRY_CHANGED', 'User', { targetUserId: req.params.id, expiresAt: accountExpiresAt }, req.ip);
+    
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });

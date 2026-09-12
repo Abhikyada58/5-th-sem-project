@@ -180,6 +180,15 @@ exports.markAttendance = async (req, res) => {
       { upsert: true, new: true }
     ).populate('studentId', 'fullName rollNumber');
 
+    const auditService = require('../services/audit.service');
+    await auditService.logAction(
+      user._id,
+      'ATTENDANCE_MARKED',
+      'Attendance',
+      { attendanceId: attendanceRecord._id, sessionId: session._id, status: 'PRESENT' },
+      req.ip
+    );
+
     // 7. Emit Real-Time Socket Update to Teacher
     if (req.io) {
       req.io.to(session.classId.toString()).emit('attendance-updated', {

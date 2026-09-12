@@ -57,13 +57,28 @@ exports.completeEnrollment = async (req, res) => {
 
 exports.deleteEnrollment = async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.user._id, {
-      faceEnrolled: false,
-      faceEnrolledAt: null,
-      faceEnrollmentSampleCount: 0,
-      encryptedFaceTemplate: null
-    });
-    res.json({ success: true, message: 'Enrollment deleted' });
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.faceEnrolled = false;
+    user.faceEnrolledAt = null;
+    user.faceEnrollmentSampleCount = 0;
+    user.encryptedFaceTemplate = undefined;
+    
+    await user.save();
+
+    const auditService = require('../services/audit.service');
+    await auditService.logAction(
+      req.user._id, // Assume Admin who resets it
+      'FACE_ENROLLMENT_RESET',
+      'User',
+      { targetUserId: user._id },
+      req.ip
+    );
+
+    res.json({ success: true, message: 'Face enrollment reset successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
