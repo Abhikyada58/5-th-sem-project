@@ -58,10 +58,38 @@ exports.getProfile = async (req, res) => {
 };
 
 const Class = require('../models/Class');
+const AttendanceSession = require('../models/AttendanceSession');
+
 exports.getClasses = async (req, res) => {
   try {
     const classes = await Class.find({ isActive: true });
     res.json({ success: true, classes });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+exports.getActiveSession = async (req, res) => {
+  try {
+    const session = await AttendanceSession.findOne({
+      classId: req.user.classId,
+      status: 'ACTIVE',
+      expiresAt: { $gt: new Date() }
+    }).populate('subjectId', 'name').populate('classId', 'name');
+
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'No active session' });
+    }
+
+    res.json({ 
+      success: true, 
+      session: {
+        _id: session._id,
+        subjectName: session.subjectId.name,
+        className: session.classId.name,
+        expiresAt: session.expiresAt
+      } 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }

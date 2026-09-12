@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute';
 import StudentRoute from './components/StudentRoute';
 
@@ -21,6 +22,7 @@ import AuditLogs from './pages/admin/AuditLogs';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 
 // Student Pages
+import StudentDashboard from './pages/student/StudentDashboard';
 import StudentSetup from './pages/student/StudentSetup';
 import FaceEnrollment from './pages/student/FaceEnrollment';
 import StudentProfile from './pages/student/StudentProfile';
@@ -29,9 +31,10 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+        <SocketProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
@@ -61,10 +64,11 @@ function App() {
           <Route path="/student/setup" element={<ProtectedRoute><StudentSetup /></ProtectedRoute>} />
           <Route path="/student/face-enrollment" element={<ProtectedRoute><FaceEnrollment /></ProtectedRoute>} />
           
-          <Route path="/student" element={<StudentRoute><Dashboard title="Student Dashboard" /></StudentRoute>} />
+          <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
           <Route path="/student/profile" element={<StudentRoute><StudentProfile /></StudentRoute>} />
 
-        </Routes>
+          </Routes>
+        </SocketProvider>
       </AuthProvider>
     </Router>
   );

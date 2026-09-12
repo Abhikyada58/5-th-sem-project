@@ -42,6 +42,20 @@ exports.startSession = async (req, res) => {
       status: 'ACTIVE'
     });
 
+    // Broadcast to the class that a session started
+    const populatedSession = await AttendanceSession.findById(session._id)
+      .populate('classId', 'name')
+      .populate('subjectId', 'name');
+      
+    if (req.io) {
+      req.io.to(classId).emit('attendance-session-started', {
+        _id: populatedSession._id,
+        className: populatedSession.classId.name,
+        subjectName: populatedSession.subjectId.name,
+        expiresAt: populatedSession.expiresAt
+      });
+    }
+
     // We return the RAW token to the frontend, but we never store it raw.
     res.status(201).json({
       success: true,
@@ -103,6 +117,11 @@ exports.closeSession = async (req, res) => {
 
     if (!session) {
       return res.status(404).json({ success: false, message: 'Session not found' });
+    }
+
+    // Broadcast session closed event
+    if (req.io) {
+      req.io.to(session.classId.toString()).emit('attendance-session-closed', session._id);
     }
 
     res.json({ success: true, message: 'Session closed successfully', session });

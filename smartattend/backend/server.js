@@ -19,6 +19,11 @@ const io = new Server(server, {
 });
 
 // Middleware
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
@@ -46,6 +51,13 @@ app.get('/api/health', (req, res) => {
 // Socket.IO
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
+
+  socket.on('join-class', (classId) => {
+    if (classId) {
+      socket.join(classId);
+      console.log(`Socket ${socket.id} joined class room: ${classId}`);
+    }
+  });
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);

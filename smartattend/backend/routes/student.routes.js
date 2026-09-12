@@ -10,5 +10,6 @@ router.use(authorize('STUDENT'));
 router.get('/classes', studentController.getClasses);
 router.post('/setup-profile', studentController.setupProfile);
 router.get('/profile', studentController.getProfile);
+router.get('/active-session', studentController.getActiveSession);
 
 module.exports = router;
