@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -8,6 +9,7 @@ import { Play, CheckCircle } from 'lucide-react';
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const socket = useSocket();
+  const navigate = useNavigate();
   const [activeSession, setActiveSession] = useState(null);
 
   useEffect(() => {
@@ -51,8 +53,7 @@ export default function StudentDashboard() {
   };
 
   const handleJoinSession = () => {
-    toast.success('Joining session (scanner will open...)');
-    // TODO: Navigate to QR Scanner / Face Verification
+    navigate('/student/scan-qr');
   };
 
   return (
