@@ -4,18 +4,42 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
-import { Play, CheckCircle } from 'lucide-react';
+import { Play, CheckCircle, Clock, Calendar, BookOpen, AlertCircle, TrendingUp } from 'lucide-react';
 
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const socket = useSocket();
   const navigate = useNavigate();
   const [activeSession, setActiveSession] = useState(null);
+  
+  // Dashboard Data State
+  const [summary, setSummary] = useState(null);
+  const [subjectSummary, setSubjectSummary] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // 1. Fetch active session on mount (in case they reconnect)
     fetchActiveSession();
+    fetchDashboardData();
   }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [sumRes, subjRes, histRes] = await Promise.all([
+        axios.get(import.meta.env.VITE_API_URL + '/attendance/my-summary'),
+        axios.get(import.meta.env.VITE_API_URL + '/attendance/my-subject-summary'),
+        axios.get(import.meta.env.VITE_API_URL + '/attendance/my-history')
+      ]);
+      setSummary(sumRes.data.summary);
+      setSubjectSummary(subjRes.data.summary);
+      setHistory(histRes.data.history);
+    } catch (err) {
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!socket) return;
@@ -96,6 +120,100 @@ export default function StudentDashboard() {
             <CheckCircle className="w-12 h-12 mx-auto text-green-400 mb-3" />
             <h2 className="text-xl font-semibold text-gray-700">No active sessions right now.</h2>
             <p className="mt-2">When a teacher starts an attendance session, it will appear here automatically.</p>
+          </div>
+        )}
+
+        {/* Analytics Section */}
+        {isLoading ? (
+          <div className="p-8 text-center text-gray-500">Loading your attendance data...</div>
+        ) : (
+          <div className="space-y-6">
+            
+            {/* Metric Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <TrendingUp className="w-8 h-8 text-indigo-500 mb-2" />
+                <p className="text-sm text-gray-500 font-medium">Overall</p>
+                <p className="text-3xl font-bold text-gray-800">{summary?.percentage || 0}%</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <CheckCircle className="w-8 h-8 text-green-500 mb-2" />
+                <p className="text-sm text-gray-500 font-medium">Present</p>
+                <p className="text-3xl font-bold text-gray-800">{summary?.present || 0}</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <AlertCircle className="w-8 h-8 text-red-500 mb-2" />
+                <p className="text-sm text-gray-500 font-medium">Absent</p>
+                <p className="text-3xl font-bold text-gray-800">{summary?.absent || 0}</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <Clock className="w-8 h-8 text-orange-500 mb-2" />
+                <p className="text-sm text-gray-500 font-medium">Late</p>
+                <p className="text-3xl font-bold text-gray-800">{summary?.late || 0}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Subject Progress */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <BookOpen className="w-5 h-5 mr-2 text-indigo-500" /> Subject Progress
+                </h2>
+                {subjectSummary.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No subject data available.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {subjectSummary.map((sub) => (
+                      <div key={sub._id}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium text-gray-700">{sub.subjectName}</span>
+                          <span className={`font-bold ${sub.percentage < 75 ? 'text-red-500' : 'text-green-500'}`}>
+                            {sub.percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className={`h-2.5 rounded-full ${sub.percentage < 75 ? 'bg-red-500' : 'bg-green-500'}`} 
+                            style={{ width: `${sub.percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* History Table */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-indigo-500" /> Recent History
+                </h2>
+                {history.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No attendance history.</p>
+                ) : (
+                  <div className="overflow-y-auto max-h-[300px] pr-2">
+                    <ul className="space-y-3">
+                      {history.map((record) => (
+                        <li key={record._id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <div>
+                            <p className="font-semibold text-gray-800 text-sm">{record.subjectId.name}</p>
+                            <p className="text-xs text-gray-500">{new Date(record.markedAt).toLocaleDateString()} • {new Date(record.markedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            record.status === 'PRESENT' ? 'bg-green-100 text-green-700' : 
+                            record.status === 'ABSENT' ? 'bg-red-100 text-red-700' : 
+                            'bg-orange-100 text-orange-700'
+                          }`}>
+                            {record.status}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         )}
 

@@ -192,3 +192,93 @@ exports.markAttendance = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error during attendance processing' });
   }
 };
+
+const mongoose = require('mongoose');
+
+exports.getMySummary = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const summary = await Attendance.aggregate([
+      { $match: { studentId: new mongoose.Types.ObjectId(studentId) } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          present: { $sum: { $cond: [{ $eq: ['$status', 'PRESENT'] }, 1, 0] } },
+          absent: { $sum: { $cond: [{ $eq: ['$status', 'ABSENT'] }, 1, 0] } },
+          late: { $sum: { $cond: [{ $eq: ['$status', 'LATE'] }, 1, 0] } },
+        }
+      }
+    ]);
+
+    if (summary.length === 0) {
+      return res.json({ success: true, summary: { total: 0, present: 0, absent: 0, late: 0, percentage: 0 } });
+    }
+
+    const data = summary[0];
+    const percentage = data.total > 0 ? Math.round((data.present / data.total) * 100) : 0;
+    
+    res.json({ success: true, summary: { ...data, percentage } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+exports.getMySubjectSummary = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const summary = await Attendance.aggregate([
+      { $match: { studentId: new mongoose.Types.ObjectId(studentId) } },
+      {
+        $group: {
+          _id: '$subjectId',
+          total: { $sum: 1 },
+          present: { $sum: { $cond: [{ $eq: ['$status', 'PRESENT'] }, 1, 0] } }
+        }
+      },
+      {
+        $lookup: {
+          from: 'subjects',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'subject'
+        }
+      },
+      { $unwind: '$subject' },
+      {
+        $project: {
+          subjectName: '$subject.name',
+          subjectCode: '$subject.code',
+          total: 1,
+          present: 1,
+          percentage: {
+            $cond: [
+              { $gt: ['$total', 0] },
+              { $round: [{ $multiply: [{ $divide: ['$present', '$total'] }, 100] }, 0] },
+              0
+            ]
+          }
+        }
+      },
+      { $sort: { subjectName: 1 } }
+    ]);
+
+    res.json({ success: true, summary });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+exports.getMyHistory = async (req, res) => {
+  try {
+    const history = await Attendance.find({ studentId: req.user._id })
+      .sort({ markedAt: -1 })
+      .limit(50) // Limit to last 50 for performance
+      .populate('subjectId', 'name code')
+      .populate('teacherId', 'fullName');
+
+    res.json({ success: true, history });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

@@ -10,4 +10,8 @@ router.use(authorize('STUDENT')); // Only students scan QR codes
 router.post('/verify-qr', attendanceController.verifyQR);
 router.post('/mark', attendanceController.markAttendance);
 
+router.get('/my-summary', attendanceController.getMySummary);
+router.get('/my-subject-summary', attendanceController.getMySubjectSummary);
+router.get('/my-history', attendanceController.getMyHistory);
+
 module.exports = router;
