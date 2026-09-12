@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  dateOfBirth: {
+    type: Date,
+  },
   passwordHash: {
     type: String,
     required: [true, 'Password is required'],

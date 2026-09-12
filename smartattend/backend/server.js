@@ -29,9 +29,11 @@ app.use(cookieParser());
 // Routes
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
+const studentRoutes = require('./routes/student.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/student', studentRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'SmartAttend API is running' });

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute';
+import StudentRoute from './components/StudentRoute';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -15,6 +16,11 @@ import TeacherManagement from './pages/admin/TeacherManagement';
 import ClassManagement from './pages/admin/ClassManagement';
 import SubjectManagement from './pages/admin/SubjectManagement';
 import AuditLogs from './pages/admin/AuditLogs';
+
+// Student Pages
+import StudentSetup from './pages/student/StudentSetup';
+import FaceEnrollment from './pages/student/FaceEnrollment';
+import StudentProfile from './pages/student/StudentProfile';
 
 function App() {
   return (
@@ -49,11 +55,11 @@ function App() {
           } />
 
           {/* Student Routes */}
-          <Route path="/student" element={
-            <RoleRoute allowedRoles={['STUDENT']}>
-              <Dashboard title="Student Dashboard" />
-            </RoleRoute>
-          } />
+          <Route path="/student/setup" element={<ProtectedRoute><StudentSetup /></ProtectedRoute>} />
+          <Route path="/student/face-enrollment" element={<ProtectedRoute><FaceEnrollment /></ProtectedRoute>} />
+          
+          <Route path="/student" element={<StudentRoute><Dashboard title="Student Dashboard" /></StudentRoute>} />
+          <Route path="/student/profile" element={<StudentRoute><StudentProfile /></StudentRoute>} />
 
         </Routes>
       </AuthProvider>
