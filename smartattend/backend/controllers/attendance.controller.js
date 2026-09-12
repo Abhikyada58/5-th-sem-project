@@ -138,25 +138,27 @@ exports.markAttendance = async (req, res) => {
     const isMatch = distance <= FACE_MATCH_THRESHOLD;
 
     if (!isMatch) {
-      // Log failed attempt but don't mark PRESENT
-      await Attendance.create({
-        studentId: user._id,
-        sessionId: session._id,
-        teacherId: session.teacherId,
-        classId: session.classId,
-        subjectId: session.subjectId,
-        status: 'ABSENT',
-        faceVerified: false,
-        livenessVerified: true,
-        verificationScore: distance,
-        failureReason: 'FACE_MISMATCH'
-      });
+      // Log failed attempt but don't mark PRESENT. Use upsert to avoid E11000 duplicate key errors if they retry.
+      await Attendance.findOneAndUpdate(
+        { studentId: user._id, sessionId: session._id },
+        {
+          teacherId: session.teacherId,
+          classId: session.classId,
+          subjectId: session.subjectId,
+          status: 'ABSENT',
+          faceVerified: false,
+          livenessVerified: true,
+          verificationScore: distance,
+          failureReason: 'FACE_MISMATCH'
+        },
+        { upsert: true, new: true }
+      );
       return res.status(403).json({ success: false, message: 'Face does not match the enrolled biometric template.' });
     }
 
-    // 6. Success! Mark Present
+    // 6. Success! Mark Present safely
     const attendanceRecord = await Attendance.findOneAndUpdate(
-      { studentId: user._id, sessionId: session._id }, // Upsert if they had a previous failed attempt
+      { studentId: user._id, sessionId: session._id },
       {
         teacherId: session.teacherId,
         classId: session.classId,
@@ -178,7 +180,6 @@ exports.markAttendance = async (req, res) => {
         rollNumber: attendanceRecord.studentId.rollNumber,
         markedAt: attendanceRecord.markedAt
       });
-      // We also trigger student-entered-session per requirements
       req.io.to(session.classId.toString()).emit('student-entered-session', {
         studentName: attendanceRecord.studentId.fullName
       });
