@@ -5,31 +5,54 @@ const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
 const cookieParser = require('cookie-parser');
+const connectDB = require('./config/db');
 
-dotenv.config();
+// Security packages
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+// 1. Security Headers
+app.use(helmet());
+
+// 2. CORS configuration
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true, // required for cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
   },
 });
+app.use(cors({ 
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', 
+  credentials: true 
+}));
 
-// Middleware
+// 3. Rate Limiting (100 requests per 15 minutes per IP)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100,
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', limiter); // Apply to all API routes
+
+// 4. Body Parser & Sanitization
+app.use(express.json({ limit: '10kb' })); // Restrict payload size
+app.use(mongoSanitize()); // Prevent NoSQL injection
+app.use(cookieParser());
+
+// Middleware injected io
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
-
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
-app.use(express.json());
-app.use(cookieParser());
 
 // Routes
 const authRoutes = require('./routes/auth.routes');
@@ -68,10 +91,11 @@ io.on('connection', (socket) => {
   });
 });
 
-// Basic Error Handling
+// Secure Global Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
+  res.status(500).json({ success: false, message });
 });
 
 const PORT = process.env.PORT || 5000;

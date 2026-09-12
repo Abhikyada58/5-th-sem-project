@@ -113,7 +113,7 @@ exports.markAttendance = async (req, res) => {
     const sessionId = payload.sessionId;
 
     // 2. Fetch User & Session
-    const user = await User.findById(req.user._id).select('faceEnrolled encryptedFaceTemplate classId');
+    const user = await User.findById(req.user._id).select('faceEnrolled classId +encryptedFaceTemplate');
     const session = await AttendanceSession.findById(sessionId);
 
     if (!session || session.status !== 'ACTIVE' || new Date(session.expiresAt) < new Date()) {
@@ -137,7 +137,9 @@ exports.markAttendance = async (req, res) => {
     }
 
     // 5. Cryptographic Face Matching
-    const masterTemplate = JSON.parse(user.encryptedFaceTemplate); // Array of 128 floats
+    const { decrypt } = require('../utils/crypto');
+    const decryptedTemplateString = decrypt(user.encryptedFaceTemplate);
+    const masterTemplate = JSON.parse(decryptedTemplateString); // Array of 128 floats
     const distance = euclideanDistance(liveDescriptor, masterTemplate);
     
     // Threshold tuning: 0.45 is typically a good strict threshold for face-api.js euclidean distance

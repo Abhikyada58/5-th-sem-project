@@ -37,8 +37,11 @@ exports.completeEnrollment = async (req, res) => {
       masterTemplate[j] = masterTemplate[j] / numSamples;
     }
 
-    // Convert to JSON string for secure storage
-    const encryptedFaceTemplate = JSON.stringify(masterTemplate);
+    const { encrypt } = require('../utils/crypto');
+    
+    // Convert to JSON string for secure storage and encrypt using AES
+    const serializedTemplate = JSON.stringify(masterTemplate);
+    const encryptedFaceTemplate = encrypt(serializedTemplate);
 
     const user = await User.findByIdAndUpdate(req.user._id, {
       faceEnrolled: true,

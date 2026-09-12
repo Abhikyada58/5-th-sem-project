@@ -36,6 +36,7 @@ const userSchema = new mongoose.Schema({
   passwordHash: {
     type: String,
     required: [true, 'Password is required'],
+    select: false, // Never return password hashes in queries
   },
   role: {
     type: String,
@@ -85,10 +86,11 @@ const userSchema = new mongoose.Schema({
     default: 0,
   },
   encryptedFaceTemplate: {
-    type: String, // Store secure embeddings, NEVER raw images
+    type: String,
+    select: false, // Strictly never leak biometric arrays to the frontend
   },
 }, {
-  timestamps: true, // Automatically adds createdAt and updatedAt
+  timestamps: true,
 });
 
 // Indexes to speed up queries
