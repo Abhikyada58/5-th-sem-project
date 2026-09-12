@@ -17,6 +17,9 @@ import ClassManagement from './pages/admin/ClassManagement';
 import SubjectManagement from './pages/admin/SubjectManagement';
 import AuditLogs from './pages/admin/AuditLogs';
 
+// Teacher Pages
+import TeacherDashboard from './pages/teacher/TeacherDashboard';
+
 // Student Pages
 import StudentSetup from './pages/student/StudentSetup';
 import FaceEnrollment from './pages/student/FaceEnrollment';
@@ -50,7 +53,7 @@ function App() {
           {/* Teacher Routes */}
           <Route path="/teacher" element={
             <RoleRoute allowedRoles={['TEACHER']}>
-              <Dashboard title="Teacher Dashboard" />
+              <TeacherDashboard />
             </RoleRoute>
           } />
 
