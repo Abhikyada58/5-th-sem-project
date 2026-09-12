@@ -27,6 +27,7 @@ import StudentSetup from './pages/student/StudentSetup';
 import FaceEnrollment from './pages/student/FaceEnrollment';
 import StudentProfile from './pages/student/StudentProfile';
 import QRScanner from './pages/student/QRScanner';
+import FaceVerification from './pages/student/FaceVerification';
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
           <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
           <Route path="/student/profile" element={<StudentRoute><StudentProfile /></StudentRoute>} />
           <Route path="/student/scan-qr" element={<StudentRoute><QRScanner /></StudentRoute>} />
+          <Route path="/student/verify-face" element={<StudentRoute><FaceVerification /></StudentRoute>} />
 
           </Routes>
         </SocketProvider>

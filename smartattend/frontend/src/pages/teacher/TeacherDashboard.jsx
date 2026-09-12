@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { Play, XCircle, Clock } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
+  const socket = useSocket();
   
   const [subjects, setSubjects] = useState([]);
   const [activeSessions, setActiveSessions] = useState([]);
@@ -57,6 +59,28 @@ export default function TeacherDashboard() {
     }
     return () => clearInterval(timer);
   }, [currentLiveSession]);
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    // Join all class rooms the teacher is teaching so they can hear events
+    if (subjects.length > 0) {
+      subjects.forEach(s => {
+        socket.emit('join-class', typeof s.classId === 'object' ? s.classId._id : s.classId);
+      });
+    }
+
+    const handleAttendanceUpdated = (data) => {
+      toast.success(`${data.studentName} marked present!`, { icon: '✅' });
+      // We could update a live participant list state here
+    };
+
+    socket.on('attendance-updated', handleAttendanceUpdated);
+
+    return () => {
+      socket.off('attendance-updated', handleAttendanceUpdated);
+    };
+  }, [socket, subjects]);
 
   const handleStartSession = async (e) => {
     e.preventDefault();
