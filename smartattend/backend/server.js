@@ -5,12 +5,11 @@ const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
 const cookieParser = require('cookie-parser');
-const connectDB = require('./config/db');
+
 
 // Security packages
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
 
 require('dotenv').config();
 
@@ -45,7 +44,6 @@ app.use('/api', limiter); // Apply to all API routes
 
 // 4. Body Parser & Sanitization
 app.use(express.json({ limit: '10kb' })); // Restrict payload size
-app.use(mongoSanitize()); // Prevent NoSQL injection
 app.use(cookieParser());
 
 // Middleware injected io
