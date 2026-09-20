@@ -51,8 +51,8 @@ exports.register = async (req, res) => {
       email,
       passwordHash,
       role,
-      studentId: role === 'STUDENT' ? studentId : undefined,
-      classId: role === 'STUDENT' ? classId : undefined,
+      studentId: (role === 'STUDENT' && studentId) ? studentId : undefined,
+      classId: (role === 'STUDENT' && classId) ? classId : undefined,
     });
 
     // Audit Log: Account Creation
