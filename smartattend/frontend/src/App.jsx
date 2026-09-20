@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute';
 import StudentRoute from './components/StudentRoute';
+import { Toaster } from 'react-hot-toast';
 
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -65,6 +66,7 @@ function App() {
             <Route path="/student/profile" element={<StudentRoute><DashboardLayout><StudentProfile /></DashboardLayout></StudentRoute>} />
 
           </Routes>
+          <Toaster position="top-right" />
         </SocketProvider>
       </AuthProvider>
     </Router>

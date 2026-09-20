@@ -90,8 +90,8 @@ export default function StudentSetup() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Class *</label>
-              <select required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
+              <label className="block text-sm font-medium text-gray-700">Class (Optional for now)</label>
+              <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
                 value={formData.classId} onChange={e => setFormData({...formData, classId: e.target.value})}>
                 <option value="">Select a Class</option>
                 {classes.map(c => (

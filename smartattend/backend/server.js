@@ -43,7 +43,7 @@ const limiter = rateLimit({
 app.use('/api', limiter); // Apply to all API routes
 
 // 4. Body Parser & Sanitization
-app.use(express.json({ limit: '10kb' })); // Restrict payload size
+app.use(express.json({ limit: '5mb' })); // Restrict payload size
 app.use(cookieParser());
 
 // Middleware injected io

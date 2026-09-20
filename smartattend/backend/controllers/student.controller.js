@@ -18,22 +18,34 @@ exports.setupProfile = async (req, res) => {
     }
 
     const updates = {
-      fullName,
-      studentId,
-      aiId,
-      phone,
-      dateOfBirth,
-      classId,
-      division,
-      rollNumber,
-      academicYear,
-      firstLogin: false // Setup is complete
+      $set: {
+        fullName,
+        phone,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        classId: classId ? classId : null,
+        division,
+        rollNumber,
+        academicYear,
+        firstLogin: false
+      },
+      $unset: {}
     };
+
+    if (studentId) updates.$set.studentId = studentId.trim();
+    else updates.$unset.studentId = "";
+
+    if (aiId) updates.$set.aiId = aiId.trim();
+    else updates.$unset.aiId = "";
 
     // If they provided a new password, hash it and save it
     if (password && password.trim().length > 0) {
       const salt = await bcrypt.genSalt(10);
-      updates.passwordHash = await bcrypt.hash(password, salt);
+      updates.$set.passwordHash = await bcrypt.hash(password, salt);
+    }
+
+    // Clean up empty $unset
+    if (Object.keys(updates.$unset).length === 0) {
+      delete updates.$unset;
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-passwordHash');
