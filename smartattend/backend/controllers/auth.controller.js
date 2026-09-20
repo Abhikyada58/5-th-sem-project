@@ -15,8 +15,8 @@ const sendTokenResponse = (user, statusCode, res) => {
   const options = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: true, // MUST be true for sameSite: 'none'
+    sameSite: 'none', // Allows cross-origin cookies
   };
 
   user.passwordHash = undefined;
@@ -111,6 +111,8 @@ exports.logout = (req, res) => {
   res.cookie('jwt', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
+    secure: true,
+    sameSite: 'none'
   });
 
   res.status(200).json({ success: true, message: 'Logged out successfully' });
