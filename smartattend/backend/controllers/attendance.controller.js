@@ -29,8 +29,8 @@ exports.verifyQR = async (req, res) => {
 
     // 3. Verify Class Membership
     // Ensure the student belongs to the class this session was created for
-    if (req.user.classId.toString() !== session.classId.toString()) {
-      return res.status(403).json({ success: false, message: 'You are not assigned to this class' });
+    if (!req.user.classId || req.user.classId.toString() !== session.classId.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this class. Please update your profile.' });
     }
 
     // 4. Verify Cryptographic Token
