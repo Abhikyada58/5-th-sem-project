@@ -11,13 +11,25 @@ export default function QRScanner() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   const handleScan = async (result) => {
-    if (!result || !result[0] || !result[0].rawValue || isProcessing) return;
+    if (!result || isProcessing) return;
     
+    // @yudiel/react-qr-scanner can return the string directly, an object with text, or an array of objects
+    let rawString = '';
+    if (typeof result === 'string') {
+      rawString = result;
+    } else if (Array.isArray(result) && result.length > 0) {
+      rawString = result[0].rawValue || result[0].text;
+    } else if (result.text || result.rawValue) {
+      rawString = result.text || result.rawValue;
+    }
+
+    if (!rawString) return;
+
     setIsProcessing(true);
     setErrorMsg(null);
 
     try {
-      const qrData = JSON.parse(result[0].rawValue);
+      const qrData = JSON.parse(rawString);
       
       if (!qrData.sessionId || !qrData.token) {
         throw new Error('Invalid QR format');
